@@ -78,53 +78,7 @@
     </div>
 
     <!-- Right Column: Image Slider with Poker Fan Effect -->
-    <div class="flex items-center justify-center h-full z-10 animate-reveal" style="animation-delay: 0.6s;">
-        <div class="relative group w-72 h-72 md:w-96 md:h-96">
-            <!-- Decorative "Poker Card" Backgrounds -->
-            <!-- Left tilted card -->
-            <div class="absolute inset-0 bg-pink-500/10 rounded-2xl border border-pink-500/20 -rotate-12 scale-95 transition-all duration-700 group-hover:-rotate-[25deg] group-hover:-translate-x-20 group-hover:scale-100" style="animation: card-float 4s infinite ease-in-out;"></div>
-            <!-- Right tilted card -->
-            <div class="absolute inset-0 bg-pink-500/10 rounded-2xl border border-pink-500/20 rotate-12 scale-95 transition-all duration-700 group-hover:rotate-[25deg] group-hover:translate-x-20 group-hover:scale-100" style="animation: card-float 4s infinite ease-in-out 1s;"></div>
-
-            <!-- Subtle glow behind the photo -->
-            <div class="absolute -inset-4 bg-pink-500/20 rounded-2xl blur-2xl opacity-0 group-hover:opacity-100 transition duration-700 z-10"></div>
-            
-            <!-- Main Slider Container -->
-            <div id="hero-slider" class="relative w-full h-full overflow-hidden rounded-2xl border-2 border-pink-500/30 shadow-2xl shadow-pink-500/10 z-20 group-hover:scale-105 transition-transform duration-700">
-                <!-- Slide 1 (Current Photo) -->
-                <div class="slide absolute inset-0 opacity-100 transition-opacity duration-1000 ease-in-out">
-                    <img 
-                        src="{{ asset('img/BeautyPlus-photo_booth-2026-03-16T08_30_12(1).png') }}" 
-                        alt="Rahmat Fushiguro Photo 1" 
-                        class="w-full h-full object-cover"
-                    >
-                </div>
-                <!-- Slide 2 (Demo Image) -->
-                <div class="slide absolute inset-0 opacity-0 transition-opacity duration-1000 ease-in-out">
-                    <img 
-                        src="https://images.unsplash.com/photo-1614850523296-d8c1af93d400?q=80&w=1000&auto=format&fit=crop" 
-                        alt="Demo Image 2" 
-                        class="w-full h-full object-cover"
-                    >
-                </div>
-                <!-- Slide 3 (Demo Image) -->
-                <div class="slide absolute inset-0 opacity-0 transition-opacity duration-1000 ease-in-out">
-                    <img 
-                        src="https://images.unsplash.com/photo-1550684848-fac1c5b4e853?q=80&w=1000&auto=format&fit=crop" 
-                        alt="Demo Image 3" 
-                        class="w-full h-full object-cover"
-                    >
-                </div>
-
-                <!-- Navigation Dots -->
-                <div class="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2 z-20">
-                    <div class="dot w-2 h-2 rounded-full bg-white/30 transition-colors duration-300"></div>
-                    <div class="dot w-2 h-2 rounded-full bg-white/30 transition-colors duration-300"></div>
-                    <div class="dot w-2 h-2 rounded-full bg-white/30 transition-colors duration-300"></div>
-                </div>
-            </div>
-        </div>
-    </div>
+    
 </div>
 
 <script>
