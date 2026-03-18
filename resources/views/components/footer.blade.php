@@ -1,7 +1,7 @@
 <div class="grid grid-cols-1 md:grid-cols-3 gap-12 w-full">
     <!-- Column 1: Branding -->
     <div class="flex flex-col gap-4">
-        <h2 class="text-2xl font-bold italic"><span class="text-pink-400">Rahmat</span> Fushiguro</h2>
+        <h2 class="text-2xl font-bold"><span class="text-pink-400">Rahmat</span> Fushiguro</h2>
         <p class="text-zinc-400 text-sm leading-relaxed">
             Exploring the world of web development with a passion for building beautiful, interactive, and user-friendly digital experiences.
         </p>

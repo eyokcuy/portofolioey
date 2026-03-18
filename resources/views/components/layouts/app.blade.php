@@ -17,30 +17,31 @@
 </head>
 <body class="font-sans antialiased text-white bg-black dark pt-[60px]">
 
-    @isset($header)
-    <x-header>
-        {{ $header }}
-    </x-header>
-    @endisset
 
     @isset($herosection)
-        <section>
+        <section class="relative z-0">
             {{ $herosection }}
         </section>
     @endisset
 
-    <main class="p-4">
+    <main class="relative z-0">
         {{ $slot }}
     </main>
 
     @isset($footer)
     <footer class="w-full border-t border-zinc-800 bg-black/50 py-12 flex items-center backdrop-blur-sm">
-        <div class="w-full px-16">
+        <div class="w-full px-6 md:px-16">
             {{ $footer }}
         </div>
     </footer>
     @endisset
 
+
+    @isset($header)
+    <x-header>
+        {{ $header }}
+    </x-header>
+    @endisset
 
     <script>
         (function() {

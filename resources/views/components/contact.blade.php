@@ -1,4 +1,4 @@
-<section id="contact" class="py-24 px-16 bg-zinc-950/30">
+<section id="contact" class="py-24 px-6 md:px-16 bg-zinc-950/30">
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-16 max-w-7xl mx-auto">
         <!-- Left: Contact Info -->
         <div class="animate-reveal">
@@ -108,13 +108,19 @@
                     if (response.ok) {
                         // Success
                         messageBox.textContent = result.message;
-                        messageBox.className = 'mb-6 p-4 bg-pink-500/20 border border-pink-500/30 rounded-xl text-pink-400 text-sm animate-reveal block';
+                        messageBox.classList.remove('hidden', 'bg-red-500/20', 'bg-yellow-500/20', 'border-red-500/30', 'border-yellow-500/30', 'text-red-400', 'text-yellow-500');
+                        messageBox.classList.add('block', 'bg-pink-500/20', 'border-pink-500/30', 'text-pink-400');
                         form.reset();
-                        
-                        // Optional: Reload section or just wait
-                        setTimeout(() => {
-                            // You could refresh the feedback list via AJAX here
-                        }, 2000);
+                        if (window.refreshFeedbackList) window.refreshFeedbackList();
+                        startCooldown(60); 
+                    } else if (response.status === 429) {
+                        // Rate Limit
+                        messageBox.textContent = result.message;
+                        messageBox.classList.remove('hidden', 'bg-red-500/20', 'bg-pink-500/20', 'border-red-500/30', 'border-pink-500/30', 'text-red-400', 'text-pink-400');
+                        messageBox.classList.add('block', 'bg-yellow-500/20', 'border-yellow-500/30', 'text-yellow-500');
+                        if (result.remaining) {
+                            startCooldown(result.remaining);
+                        }
                     } else {
                         // Validation Errors
                         let errorMsg = result.message || 'Something went wrong.';
@@ -122,19 +128,52 @@
                             errorMsg = Object.values(result.errors).flat().join(' ');
                         }
                         messageBox.textContent = errorMsg;
-                        messageBox.className = 'mb-6 p-4 bg-red-500/20 border border-red-500/30 rounded-xl text-red-400 text-sm animate-reveal block';
+                        messageBox.classList.remove('hidden', 'bg-pink-500/20', 'bg-yellow-500/20', 'border-pink-500/30', 'border-yellow-500/30', 'text-pink-400', 'text-yellow-500');
+                        messageBox.classList.add('block', 'bg-red-500/20', 'border-red-500/30', 'text-red-400');
                     }
                 } catch (error) {
+                    console.error('Feedback Error:', error);
                     messageBox.textContent = 'Connection error. Please try again.';
-                    messageBox.className = 'mb-6 p-4 bg-red-500/20 border border-red-500/30 rounded-xl text-red-400 text-sm animate-reveal block';
+                    messageBox.classList.remove('hidden');
+                    messageBox.classList.add('block', 'bg-red-500/20', 'border-red-500/30', 'text-red-400');
                 } finally {
-                    btn.disabled = false;
-                    btnText.textContent = 'Submit Feedback';
-                    btnIcon.classList.remove('hidden');
-                    btnSpinner.classList.add('hidden');
-                    btn.classList.remove('opacity-80', 'cursor-not-allowed');
+                    // Only re-enable if NOT in cooldown
+                    if (!window.cooldownActive) {
+                        btn.disabled = false;
+                        btnText.textContent = 'Submit Feedback';
+                        btnIcon.classList.remove('hidden');
+                        btnSpinner.classList.add('hidden');
+                        btn.classList.remove('opacity-80', 'cursor-not-allowed');
+                    }
                 }
             });
+
+            function startCooldown(seconds) {
+                const btn = document.getElementById('submit-btn');
+                const btnText = document.getElementById('btn-text');
+                const btnIcon = document.getElementById('btn-icon');
+                const btnSpinner = document.getElementById('btn-spinner');
+                
+                window.cooldownActive = true;
+                btn.disabled = true;
+                btnIcon.classList.add('hidden');
+                btnSpinner.classList.add('hidden');
+                btn.classList.add('opacity-80', 'cursor-not-allowed');
+
+                let count = seconds;
+                const timer = setInterval(() => {
+                    btnText.textContent = `Wait (${count}s)`;
+                    count--;
+                    if (count < 0) {
+                        clearInterval(timer);
+                        window.cooldownActive = false;
+                        btn.disabled = false;
+                        btnText.textContent = 'Submit Feedback';
+                        btnIcon.classList.remove('hidden');
+                        btn.classList.remove('opacity-80', 'cursor-not-allowed');
+                    }
+                }, 1000);
+            }
         </script>
     </div>
 </section>

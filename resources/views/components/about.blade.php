@@ -1,5 +1,5 @@
-<section id="about" class="py-24 px-16 bg-zinc-950/30">
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center max-w-7xl mx-auto">
+<section id="about" class="py-24 px-6 md:px-16 bg-zinc-950/30">
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-10 md:gap-16 items-center max-w-7xl mx-auto">
         <!-- Left: Bio Content -->
         <div class="animate-reveal">
             <h2 class="text-4xl md:text-5xl font-bold mb-6">
@@ -55,7 +55,7 @@
                         </li>
                         <li class="flex items-center gap-3 text-zinc-400">
                             <span class="w-2 h-2 rounded-full bg-pink-500"></span>
-                            UI/UX Animation Focus
+                            Problem Solving
                         </li>
                         <li class="flex items-center gap-3 text-zinc-400">
                             <span class="w-2 h-2 rounded-full bg-pink-500"></span>
