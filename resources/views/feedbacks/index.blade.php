@@ -12,7 +12,7 @@
                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="group-hover:-translate-x-1 transition-transform"><path d="m15 18-6-6 6-6"/></svg>
                 Back to Home
             </a>
-            <h1 class="text-4xl md:text-6xl font-bold italic mb-4">
+            <h1 class="text-4xl md:text-6xl font-bold mb-4">
                 What People <span class="text-pink-400">Say</span>
             </h1>
             <div class="w-32 h-1.5 bg-pink-500 rounded-full"></div>

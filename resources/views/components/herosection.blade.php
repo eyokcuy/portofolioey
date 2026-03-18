@@ -5,7 +5,9 @@
 
     <!-- Left Column: Text Content -->
     <div class="flex flex-col justify-center items-center md:items-start text-center md:text-left gap-4 z-10">
-        <h1 class="text-4xl md:text-6xl font-bold animate-reveal" style="animation-delay: 0.1s;"><span class="text-pink-400">Hello!</span> I'm Rahmat Fushiguro</h1>
+        <h1 class="text-4xl md:text-6xl font-bold animate-reveal min-h-[1.2em]" style="animation-delay: 0.1s;">
+            <span id="typing-name"></span>
+        </h1>
         <p class="text-xl md:text-2xl font-bold animate-reveal min-h-[1.5em]" style="animation-delay: 0.2s;">
             <span id="typing-text" class="text-pink-400 border-r-2 border-pink-500/50 pr-1 cursor-blink"></span>
         </p>
@@ -103,40 +105,53 @@
 
 <script>
     (function() {
-        // --- Typing Animation ---
+        // --- Typing Animation (Sequential) ---
         const typingElement = document.getElementById('typing-text');
+        const nameElement = document.getElementById('typing-name');
+        const nameText = "Hello! I'm Rahmat Fushiguro";
         const words = ["Creative Developer", "Problem Solver", "Tech Enthusiast", "Digital Artist"];
         let wordIndex = 0;
         let charIndex = 0;
         let isDeleting = false;
-        let typeSpeed = 150;
+        
+        function typeName(index) {
+            if (index <= nameText.length) {
+                let greeting = nameText.substring(0, Math.min(index, 6));
+                let rest = nameText.substring(6, index);
+                nameElement.innerHTML = `<span class="text-pink-400">${greeting}</span>${rest}`;
+                setTimeout(() => typeName(index + 1), 60);
+            } else {
+                setTimeout(() => type(), 500);
+            }
+        }
 
         function type() {
             const currentWord = words[wordIndex];
+            let typeSpeed = 150;
             
             if (isDeleting) {
                 typingElement.textContent = currentWord.substring(0, charIndex - 1);
                 charIndex--;
-                typeSpeed = 100;
+                typeSpeed = 80;
             } else {
                 typingElement.textContent = currentWord.substring(0, charIndex + 1);
                 charIndex++;
-                typeSpeed = 200;
+                typeSpeed = 120;
             }
 
             if (!isDeleting && charIndex === currentWord.length) {
                 isDeleting = true;
-                typeSpeed = 2000; // Pause at end
+                typeSpeed = 2000;
             } else if (isDeleting && charIndex === 0) {
                 isDeleting = false;
                 wordIndex = (wordIndex + 1) % words.length;
-                typeSpeed = 500; // Pause before next word
+                typeSpeed = 500;
             }
 
             setTimeout(type, typeSpeed);
         }
         
-        if (typingElement) type();
+        if (nameElement) typeName(0);
 
         // --- Particle System Script ---
         const canvas = document.getElementById('hero-particles');

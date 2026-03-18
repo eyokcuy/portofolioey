@@ -1,25 +1,20 @@
 <?php
 
-use App\Http\Controllers\FeedbackController;
-use App\Models\Feedback;
+use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
-use Illuminate\Support\Facades\Response;
-use Illuminate\Support\Facades\File;
 
 Route::get('/', function () {
-    $feedbacks = Feedback::latest()->take(10)->get();
-    return view('landing', compact('feedbacks'));
-})->name('landing');
+    return view('landing');
+});
 
-Route::get('/feedback/partial', [FeedbackController::class, 'fetch'])->name('feedback.partial');
+Route::get('/dashboard', function () {
+    return view('dashboard');
+})->middleware(['auth', 'verified'])->name('dashboard');
 
-Route::get('/feedback', [FeedbackController::class, 'index'])->name('feedback.index');
-Route::post('/feedback', [FeedbackController::class, 'store'])->name('feedback.store');
+Route::middleware('auth')->group(function () {
+    Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
+    Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
+    Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+});
 
-Route::get('/play-audio', function () {
-    $path = public_path('audio/kane.mp3');
-    return response()->file($path, [
-        'Content-Type' => 'audio/mpeg',
-        'Accept-Ranges' => 'bytes',
-    ]);
-}); 
+require __DIR__.'/auth.php';
