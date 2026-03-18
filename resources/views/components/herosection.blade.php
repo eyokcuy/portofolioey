@@ -6,7 +6,9 @@
     <!-- Left Column: Text Content -->
     <div class="flex flex-col justify-center items-center md:items-start text-center md:text-left gap-4 z-10">
         <h1 class="text-4xl md:text-6xl font-bold animate-reveal" style="animation-delay: 0.1s;"><span class="text-pink-400">Hello!</span> I'm Rahmat Fushiguro</h1>
-        <p class="text-xl md:text-2xl font-bold animate-reveal" style="animation-delay: 0.2s;">I'm a junior web developer</p>
+        <p class="text-xl md:text-2xl font-bold animate-reveal min-h-[1.5em]" style="animation-delay: 0.2s;">
+            <span id="typing-text" class="text-pink-400 border-r-2 border-pink-500/50 pr-1 cursor-blink"></span>
+        </p>
         <div class="animate-reveal" style="animation-delay: 0.3s;">
            <a href="#" class="bg-pink-400 text-white px-8 py-4 rounded-full font-bold hover:bg-pink-500 transition-all hover:scale-105 active:scale-95 shadow-xl shadow-pink-500/20 inline-block text-center mt-2">Download CV</a>
         </div>
@@ -49,8 +51,11 @@
                     </button>
                 </div>
 
-                <!-- Bottom: Progress & Controls -->
+                <!-- Bottom: Visualizer & Progress -->
                 <div class="flex flex-col gap-2">
+                    <div class="h-8 w-full flex items-end justify-center gap-[2px] px-2 opacity-50">
+                        <canvas id="visualizer-canvas" class="w-full h-full"></canvas>
+                    </div>
                     <div class="flex flex-col gap-1">
                         <!-- Progress Area with larger hit target -->
                         <div class="relative h-5 w-full flex items-center cursor-pointer group/bar" id="progress-container" style="touch-action: none;">
@@ -75,12 +80,64 @@
         <!--   -->
     </div>
 
-    <!-- Right Column: Image Slider with Poker Fan Effect -->
-    
+    <!-- Right Column: 3D Trigonometry Animation (Abstract Framework) -->
+    <div class="hidden md:flex justify-center items-center relative h-full min-h-[600px] md:min-h-[750px] z-10 overflow-visible">
+        <div id="trig-3d-canvas-container" class="absolute inset-0 w-full h-full cursor-grab active:cursor-grabbing"></div>
+        <!-- Decorative Glow -->
+        <div class="absolute inset-0 bg-gradient-to-br from-pink-500/10 to-transparent pointer-events-none rounded-full blur-[120px] -z-10"></div>
+    </div>
 </div>
+
+<style>
+    @keyframes blink {
+        0%, 100% { border-color: transparent; }
+        50% { border-color: rgba(244, 114, 182, 0.5); }
+    }
+    .cursor-blink {
+        animation: blink 0.8s infinite;
+    }
+</style>
+
+<!-- Three.js Library -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 
 <script>
     (function() {
+        // --- Typing Animation ---
+        const typingElement = document.getElementById('typing-text');
+        const words = ["Creative Developer", "Problem Solver", "Tech Enthusiast", "Digital Artist"];
+        let wordIndex = 0;
+        let charIndex = 0;
+        let isDeleting = false;
+        let typeSpeed = 150;
+
+        function type() {
+            const currentWord = words[wordIndex];
+            
+            if (isDeleting) {
+                typingElement.textContent = currentWord.substring(0, charIndex - 1);
+                charIndex--;
+                typeSpeed = 100;
+            } else {
+                typingElement.textContent = currentWord.substring(0, charIndex + 1);
+                charIndex++;
+                typeSpeed = 200;
+            }
+
+            if (!isDeleting && charIndex === currentWord.length) {
+                isDeleting = true;
+                typeSpeed = 2000; // Pause at end
+            } else if (isDeleting && charIndex === 0) {
+                isDeleting = false;
+                wordIndex = (wordIndex + 1) % words.length;
+                typeSpeed = 500; // Pause before next word
+            }
+
+            setTimeout(type, typeSpeed);
+        }
+        
+        if (typingElement) type();
+
         // --- Particle System Script ---
         const canvas = document.getElementById('hero-particles');
         const ctx = canvas.getContext('2d');
@@ -362,6 +419,75 @@
                 }
             });
 
+
+
+            // --- Audio Visualizer ---
+            let audioCtx;
+            let analyser;
+            let source;
+
+            function initVisualizer() {
+                if (audioCtx) return;
+                
+                try {
+                    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                    analyser = audioCtx.createAnalyser();
+                    source = audioCtx.createMediaElementSource(audio);
+                    source.connect(analyser);
+                    analyser.connect(audioCtx.destination);
+                    
+                    analyser.fftSize = 64; 
+                    const bufferLength = analyser.frequencyBinCount;
+                    const dataArray = new Uint8Array(bufferLength);
+                    
+                    const vCanvas = document.getElementById('visualizer-canvas');
+                    const vCtx = vCanvas.getContext('2d');
+                    
+                    // Set internal canvas size
+                    const dpr = window.devicePixelRatio || 1;
+                    vCanvas.width = vCanvas.offsetWidth * dpr;
+                    vCanvas.height = vCanvas.offsetHeight * dpr;
+                    vCtx.scale(dpr, dpr);
+
+                    function draw() {
+                        if (!isPlaying && audioCtx.state !== 'running') {
+                             requestAnimationFrame(draw);
+                             return;
+                        }
+
+                        requestAnimationFrame(draw);
+                        analyser.getByteFrequencyData(dataArray);
+                        
+                        vCtx.clearRect(0, 0, vCanvas.width, vCanvas.height);
+                        
+                        const barWidth = (vCanvas.offsetWidth / bufferLength);
+                        let x = 0;
+                        
+                        for (let i = 0; i < bufferLength; i++) {
+                            const barHeight = (dataArray[i] / 255) * vCanvas.offsetHeight;
+                            
+                            // Beautiful pink theme bars
+                            const gradient = vCtx.createLinearGradient(0, vCanvas.offsetHeight, 0, 0);
+                            gradient.addColorStop(0, 'rgba(236, 72, 153, 0.2)');
+                            gradient.addColorStop(1, 'rgba(236, 72, 153, 0.8)');
+                            
+                            vCtx.fillStyle = gradient;
+                            vCtx.fillRect(x, vCanvas.offsetHeight - barHeight, barWidth - 1, barHeight);
+                            
+                            x += barWidth;
+                        }
+                    }
+                    draw();
+                } catch (e) {
+                    console.error("Audio Visualizer Error:", e);
+                }
+            }
+
+            audio.addEventListener('play', () => {
+                if (!audioCtx) initVisualizer();
+                if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
+            });
+
             audio.addEventListener('ended', () => {
                 audio.currentTime = 0;
                 isPlaying = false;
@@ -401,5 +527,100 @@
             window.addEventListener('load', forcePlay);
             forcePlay();
         }
+
+        // --- 3D Trigonometry Animation ---
+        (function() {
+            const container = document.getElementById('trig-3d-canvas-container');
+            if (!container || typeof THREE === 'undefined') return;
+
+            const scene = new THREE.Scene();
+            const camera = new THREE.PerspectiveCamera(75, container.clientWidth / container.clientHeight, 0.1, 1000);
+            const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+            
+            renderer.setSize(container.clientWidth, container.clientHeight);
+            renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+            container.appendChild(renderer.domElement);
+
+            // Sphere Geometry for the "Globe Framework"
+            const geometry = new THREE.SphereGeometry(6, 32, 32); 
+            
+            // Material with wireframe (Rangka Globe)
+            const material = new THREE.MeshPhongMaterial({
+                color: 0xec4899,
+                wireframe: true,
+                transparent: true,
+                opacity: 0.4,
+                shininess: 100
+            });
+
+            const mesh = new THREE.Mesh(geometry, material);
+            scene.add(mesh);
+
+            // Points Material for vertices (Mathematical nodes)
+            const pointsMaterial = new THREE.PointsMaterial({
+                color: 0x8b5cf6,
+                size: 0.06,
+                transparent: true,
+                opacity: 0.7
+            });
+            const points = new THREE.Points(geometry, pointsMaterial);
+            scene.add(points);
+
+            // Lights
+            scene.add(new THREE.AmbientLight(0xffffff, 0.4));
+            const pointLight = new THREE.PointLight(0xec4899, 2);
+            pointLight.position.set(15, 15, 15);
+            scene.add(pointLight);
+
+            const purpleLight = new THREE.PointLight(0x8b5cf6, 2);
+            purpleLight.position.set(-15, -15, 15);
+            scene.add(purpleLight);
+
+            camera.position.z = 25;
+
+            let mouseX = 0, mouseY = 0;
+            container.addEventListener('mousemove', (e) => {
+                const rect = container.getBoundingClientRect();
+                mouseX = (e.clientX - rect.left) / rect.width - 0.5;
+                mouseY = (e.clientY - rect.top) / rect.height - 0.5;
+            });
+
+            function animateTrig() {
+                requestAnimationFrame(animateTrig);
+                const time = Date.now() * 0.001;
+                
+                // Subtle trigonometric surface "breathing"
+                const position = geometry.attributes.position;
+                const vertex = new THREE.Vector3();
+
+                for (let i = 0; i < position.count; i++) {
+                    vertex.fromBufferAttribute(position, i);
+                    const direction = vertex.clone().normalize();
+                    const dist = 6 + Math.sin(vertex.x * 2 + time) * 0.2 + 
+                                     Math.cos(vertex.y * 2 + time) * 0.2;
+                    vertex.copy(direction).multiplyScalar(dist);
+                    position.setXYZ(i, vertex.x, vertex.y, vertex.z);
+                }
+                position.needsUpdate = true;
+
+                mesh.rotation.y += 0.004;
+                mesh.rotation.x += 0.002;
+                
+                // Interaction
+                mesh.rotation.y += (mouseX * 1.5 - mesh.rotation.y) * 0.05;
+                mesh.rotation.x += (mouseY * 1.5 - mesh.rotation.x) * 0.05;
+                points.rotation.copy(mesh.rotation);
+
+                renderer.render(scene, camera);
+            }
+
+            window.addEventListener('resize', () => {
+                camera.aspect = container.clientWidth / container.clientHeight;
+                camera.updateProjectionMatrix();
+                renderer.setSize(container.clientWidth, container.clientHeight);
+            });
+
+            animateTrig();
+        })();
     })();
 </script>
