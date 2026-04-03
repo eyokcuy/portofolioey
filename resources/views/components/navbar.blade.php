@@ -5,10 +5,10 @@
 
     <!-- Desktop Menu -->
     <div class="hidden md:flex items-center gap-8">
-        <a href="{{ url('/') }}#home" class="text-zinc-400 hover:text-pink-400 transition-all font-semibold text-sm uppercase tracking-wider hover:-translate-y-0.5">Home</a>
-        <a href="{{ url('/') }}#skills" class="text-zinc-400 hover:text-pink-400 transition-all font-semibold text-sm uppercase tracking-wider hover:-translate-y-0.5">Skills</a>
-        <a href="{{ url('/') }}#about" class="text-zinc-400 hover:text-pink-400 transition-all font-semibold text-sm uppercase tracking-wider hover:-translate-y-0.5">About</a>
-        <a href="{{ url('/') }}#feedback" class="text-zinc-400 hover:text-pink-400 transition-all font-semibold text-sm uppercase tracking-wider hover:-translate-y-0.5">Feedbacks</a>
+        <a href="{{ url('/') }}#home" class="text-zinc-400 hover:text-pink-400 transition-all font-semibold text-sm tracking-wider hover:-translate-y-0.5">Home</a>
+        <a href="{{ url('/') }}#skills" class="text-zinc-400 hover:text-pink-400 transition-all font-semibold text-sm tracking-wider hover:-translate-y-0.5">Skills</a>
+        <a href="{{ url('/') }}#about" class="text-zinc-400 hover:text-pink-400 transition-all font-semibold text-sm tracking-wider hover:-translate-y-0.5">About</a>
+        <a href="{{ url('/') }}#feedback" class="text-zinc-400 hover:text-pink-400 transition-all font-semibold text-sm tracking-wider hover:-translate-y-0.5">Feedbacks</a>
         <a href="{{ url('/') }}#feedbackform" class="bg-pink-500 text-white px-5 py-2 rounded-full font-bold text-sm hover:bg-pink-600 transition-all shadow-lg shadow-pink-500/20 active:scale-95">Contact</a>
     </div>
 

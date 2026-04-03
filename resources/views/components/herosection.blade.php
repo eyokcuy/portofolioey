@@ -68,13 +68,16 @@
                             <div id="progress-handle" class="absolute top-1/2 -translate-y-1/2 w-3 h-3 bg-white rounded-full scale-0 group-hover/bar:scale-100 transition-transform shadow-md pointer-events-none" style="left: 0%;"></div>
                         </div>
                         <div class="flex justify-between text-[10px] text-zinc-600 font-medium px-0.5">
+                            <span id="current-time">0:00</span>
                             <span id="duration">...</span>
                         </div>
+
                     </div>
                 </div>
 
                 <!-- Ganti asset('audio/kane.mp3') menjadi route('play-audio') -->
-                <audio id="main-audio" preload="auto" src="{{ route('play-audio') }}" autoplay playsinline></audio>
+                <audio id="main-audio" preload="auto" src="{{ route('play-audio') }}" playsinline></audio>
+
 
             </div>
         </div>
@@ -319,7 +322,7 @@
                 const progressPercent = (currentTime / duration) * 100;
                 progressBar.style.width = `${progressPercent}%`;
                 if (progressHandle) progressHandle.style.left = `${progressPercent}%`;
-                currentTimeEl.innerText = formatTime(currentTime);
+                if (currentTimeEl) currentTimeEl.innerText = formatTime(currentTime);
             }
 
             audio.addEventListener('timeupdate', updateProgress);
@@ -341,7 +344,7 @@
                 const rect = progressContainer.getBoundingClientRect();
                 
                 let clientX;
-                if (e.type.includes('touch')) {
+                if (e.type && e.type.includes('touch')) {
                     clientX = (e.touches && e.touches.length) ? e.touches[0].clientX : e.changedTouches[0].clientX;
                 } else {
                     clientX = e.clientX;
@@ -355,22 +358,14 @@
                 const percentString = `${percentage * 100}%`;
                 progressBar.style.width = percentString;
                 if (progressHandle) progressHandle.style.left = percentString;
-                currentTimeEl.innerText = formatTime(seekTime);
+                if (currentTimeEl) currentTimeEl.innerText = formatTime(seekTime);
                 
                 // Update Audio hanya jika updateAudio bernilai true (saat mouseup/touchend)
                 if (updateAudio && isFinite(seekTime)) {
-                    // Matikan event listener sementara agar tidak bentrok
-                    audio.removeEventListener('timeupdate', updateProgress);
-                    
                     audio.currentTime = seekTime;
-                    
-                    // Pasang kembali setelah audio stabil di posisi baru
-                    audio.addEventListener('canplaythrough', function onCanPlay() {
-                        audio.addEventListener('timeupdate', updateProgress);
-                        audio.removeEventListener('canplaythrough', onCanPlay);
-                    }, { once: true });
                 }
             }
+
 
             progressContainer.addEventListener('mousedown', (e) => {
                 isDragging = true;
@@ -588,39 +583,10 @@
                 progressBar.style.width = '0%';
                 if (progressHandle) progressHandle.style.left = '0%';
             });
-
-            // --- "Aggressive" Autoplay Unlocker ---
-            const forcePlay = () => {
-                audio.play().then(() => {
-                    // Sync UI State
-                    isPlaying = true;
-                    playIcon.classList.add('hidden');
-                    pauseIcon.classList.remove('hidden');
-                    
-                    // Cleanup
-                    ['pointerdown', 'keydown', 'click', 'mousemove', 'wheel', 'scroll'].forEach(e => {
-                        window.removeEventListener(e, forcePlay);
-                    });
-                    clearInterval(autoRetry);
-                }).catch(err => {
-                    // Blocked - wait for next retry or interaction
-                });
-            };
-
-            // Watch for ANY interaction
-            ['pointerdown', 'keydown', 'click', 'mousemove', 'wheel', 'scroll'].forEach(e => {
-                window.addEventListener(e, forcePlay, { once: true, passive: true });
-            });
-
-            // Recurrent attempt (handles browser delay)
-            const autoRetry = setInterval(forcePlay, 1000);
-
-            // Immediate attempts
-            window.addEventListener('load', forcePlay);
-            forcePlay();
         }
 
         // --- 3D Trigonometry Animation ---
+
         (function() {
             const container = document.getElementById('trig-3d-canvas-container');
             if (!container || typeof THREE === 'undefined') return;
