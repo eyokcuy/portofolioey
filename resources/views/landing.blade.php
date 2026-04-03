@@ -15,7 +15,7 @@
 
     <x-feedback :feedbacks="$feedbacks" />
     
-    <x-contact />
+    <x-feedbackform />
 
     <x-slot:footer>
         <x-footer />

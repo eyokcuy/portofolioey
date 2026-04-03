@@ -9,7 +9,7 @@
         <a href="{{ url('/') }}#skills" class="text-zinc-400 hover:text-pink-400 transition-all font-semibold text-sm uppercase tracking-wider hover:-translate-y-0.5">Skills</a>
         <a href="{{ url('/') }}#about" class="text-zinc-400 hover:text-pink-400 transition-all font-semibold text-sm uppercase tracking-wider hover:-translate-y-0.5">About</a>
         <a href="{{ url('/') }}#feedback" class="text-zinc-400 hover:text-pink-400 transition-all font-semibold text-sm uppercase tracking-wider hover:-translate-y-0.5">Feedbacks</a>
-        <a href="{{ url('/') }}#contact" class="bg-pink-500 text-white px-5 py-2 rounded-full font-bold text-sm hover:bg-pink-600 transition-all shadow-lg shadow-pink-500/20 active:scale-95">Contact</a>
+        <a href="{{ url('/') }}#feedbackform" class="bg-pink-500 text-white px-5 py-2 rounded-full font-bold text-sm hover:bg-pink-600 transition-all shadow-lg shadow-pink-500/20 active:scale-95">Contact</a>
     </div>
 
     <!-- Mobile Menu Button -->
@@ -24,7 +24,6 @@
         <a href="{{ url('/') }}#skills" class="mobile-nav-link text-sm font-bold text-zinc-300 hover:text-pink-400 transition-colors py-4 px-4 border-b border-white/5">Skills</a>
         <a href="{{ url('/') }}#about" class="mobile-nav-link text-sm font-bold text-zinc-300 hover:text-pink-400 transition-colors py-4 px-4 border-b border-white/5">About Me</a>
         <a href="{{ url('/') }}#feedback" class="mobile-nav-link text-sm font-bold text-zinc-300 hover:text-pink-400 transition-colors py-4 px-4 border-b border-white/5">Feedbacks</a>
-        <a href="{{ url('/') }}#contact" class="mobile-nav-link text-sm font-bold text-pink-400 transition-colors py-4 px-4">Apa</a>
     </div>
 </div>
 

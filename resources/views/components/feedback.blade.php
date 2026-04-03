@@ -1,4 +1,4 @@
-<section id="feedback" class="py-24 px-6 md:px-16 relative overflow-hidden">
+<section id="feedback" class="py-24 px-6 md:px-40 relative overflow-hidden">
     <!-- Header -->
     <div class="text-center mb-16 animate-reveal">
         <h2 class="text-4xl md:text-5xl font-bold mb-4">Users <span class="text-pink-400">Feedback</span></h2>

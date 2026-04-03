@@ -78,7 +78,7 @@
 
             </div>
         </div>
-        <!--   --> 
+        <!--   -->
     </div>
 
     <!-- Right Column: 3D Trigonometry Animation (Abstract Framework) -->
@@ -277,16 +277,6 @@
         if (audio && playBtn) {
             let isPlaying = false;
             let isDragging = false;
-            let isSeeking = false;
-            let rafId = null;
-
-            function throttleUpdate(callback) {
-                if (rafId) return;
-                rafId = requestAnimationFrame(() => {
-                    callback();
-                    rafId = null;
-                });
-            }
 
             function togglePlay() {
                 if (isPlaying) {
@@ -319,21 +309,20 @@
             }
 
             // Di dalam updateProgress()
-            function throttledUpdateProgress() {
-                throttleUpdate(() => {
-                    if (isDragging || isSeeking || audio.seeking || audio.waiting) return;
-                    
-                    const { currentTime, duration } = audio;
-                    if (!duration || isNaN(duration)) return;
-                    
-                    const progressPercent = (currentTime / duration) * 100;
-                    progressBar.style.width = `${progressPercent}%`;
-                    if (progressHandle) progressHandle.style.left = `${progressPercent}%`;
-                    currentTimeEl.innerText = formatTime(currentTime);
-                });
+            function updateProgress() {
+                // Tambahkan pengecekan audio.seeking untuk mencegah "lompatan" UI
+                if (isDragging || audio.seeking) return; 
+                
+                const { currentTime, duration } = audio;
+                if (!duration || isNaN(duration)) return;
+                
+                const progressPercent = (currentTime / duration) * 100;
+                progressBar.style.width = `${progressPercent}%`;
+                if (progressHandle) progressHandle.style.left = `${progressPercent}%`;
+                currentTimeEl.innerText = formatTime(currentTime);
             }
 
-            audio.addEventListener('timeupdate', throttledUpdateProgress);
+            audio.addEventListener('timeupdate', updateProgress);
 
             function setDuration() {
                 if (audio.duration && !isNaN(audio.duration)) {
@@ -347,13 +336,13 @@
                 audio.addEventListener('loadedmetadata', setDuration);
             }
 
-            function scrub(e, doSeek = false) {
+            function scrub(e, updateAudio = false) {
                 if (!audio.duration || isNaN(audio.duration)) return;
                 const rect = progressContainer.getBoundingClientRect();
                 
                 let clientX;
-                if (e.type?.includes('touch')) {
-                    clientX = e.touches?.[0]?.clientX || e.changedTouches?.[0]?.clientX;
+                if (e.type.includes('touch')) {
+                    clientX = (e.touches && e.touches.length) ? e.touches[0].clientX : e.changedTouches[0].clientX;
                 } else {
                     clientX = e.clientX;
                 }
@@ -362,43 +351,33 @@
                 let percentage = Math.max(0, Math.min(1, x / rect.width));
                 const seekTime = percentage * audio.duration;
 
-                // Instant visual update (throttled)
+                // Update Visual secara instan
                 const percentString = `${percentage * 100}%`;
                 progressBar.style.width = percentString;
                 if (progressHandle) progressHandle.style.left = percentString;
                 currentTimeEl.innerText = formatTime(seekTime);
                 
-                if (doSeek && isFinite(seekTime)) {
-                    // Only seek if buffered to avoid MP3 rebuffering jumps
-                    if (audio.buffered.length > 0 && seekTime <= audio.buffered.end(audio.buffered.length - 1) + 1) {
-                        isSeeking = true;
-                        audio.currentTime = seekTime;
-                        
-                        const onSeeked = () => {
-                            isSeeking = false;
-                            throttledUpdateProgress();
-                            audio.removeEventListener('seeked', onSeeked);
-                        };
-                        const onWaiting = () => { isSeeking = true; };
-                        
-                        audio.addEventListener('seeked', onSeeked, { once: true });
-                        audio.addEventListener('waiting', onWaiting, { once: true });
-                    } else {
-                        // Unbuffered - update visual only, pulse for feedback
-                        progressBar.classList.add('animate-pulse');
-                        setTimeout(() => progressBar.classList.remove('animate-pulse'), 800);
-                        console.log('Seek skipped - not buffered yet');
-                    }
+                // Update Audio hanya jika updateAudio bernilai true (saat mouseup/touchend)
+                if (updateAudio && isFinite(seekTime)) {
+                    // Matikan event listener sementara agar tidak bentrok
+                    audio.removeEventListener('timeupdate', updateProgress);
+                    
+                    audio.currentTime = seekTime;
+                    
+                    // Pasang kembali setelah audio stabil di posisi baru
+                    audio.addEventListener('canplaythrough', function onCanPlay() {
+                        audio.addEventListener('timeupdate', updateProgress);
+                        audio.removeEventListener('canplaythrough', onCanPlay);
+                    }, { once: true });
                 }
             }
 
             progressContainer.addEventListener('mousedown', (e) => {
                 isDragging = true;
-                isSeeking = false;
                 progressBar.style.transition = 'none';
                 if (progressHandle) progressHandle.style.transition = 'none';
+                // Just update visuals on start
                 scrub(e, false);
-                e.preventDefault();
             });
 
             window.addEventListener('mousemove', (e) => {
@@ -409,6 +388,7 @@
 
             window.addEventListener('mouseup', (e) => {
                 if (isDragging) {
+                    // Finalize seek on release
                     scrub(e, true);
                     isDragging = false;
                     progressBar.style.transition = 'width 0.1s linear';
@@ -419,7 +399,6 @@
             // Touch Support
             progressContainer.addEventListener('touchstart', (e) => {
                 isDragging = true;
-                isSeeking = false;
                 progressBar.style.transition = 'none';
                 if (progressHandle) progressHandle.style.transition = 'none';
                 scrub(e, false);
@@ -602,12 +581,12 @@
             });
 
             audio.addEventListener('ended', () => {
-                isSeeking = false;
                 audio.currentTime = 0;
                 isPlaying = false;
-                throttledUpdateProgress();
                 playIcon.classList.remove('hidden');
                 pauseIcon.classList.add('hidden');
+                progressBar.style.width = '0%';
+                if (progressHandle) progressHandle.style.left = '0%';
             });
 
             // --- "Aggressive" Autoplay Unlocker ---

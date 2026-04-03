@@ -1,6 +1,6 @@
-<section id="contact" class="py-24 px-6 md:px-16 bg-zinc-950/30">
+<section id="feedbackform" class="py-24 px-6 md:px-16 bg-zinc-950/30">
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-16 max-w-7xl mx-auto">
-        <!-- Left: Contact Info -->
+        <!-- Left: Contact Email -->
         <div class="animate-reveal">
             <h2 class="text-4xl md:text-5xl font-bold mb-6">
                 Give your <span class="text-pink-400">Feedback</span>
