@@ -14,6 +14,9 @@
     @if (file_exists(public_path('build/manifest.json')) || file_exists(public_path('hot')))
         @vite(['resources/css/app.css', 'resources/js/app.js'])
     @endif
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/jpeg" href="{{ asset('img/iconweb.jpeg') }}">
 </head>
 <body class="font-sans antialiased text-white bg-black dark pt-[60px]">
 

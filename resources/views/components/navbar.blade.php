@@ -1,6 +1,6 @@
 <div class="flex justify-between items-center w-full relative">
     <a href="{{ url('/') }}" class="flex items-center group">
-        <img src="{{ asset('img/iconweb.jpeg') }}" alt="Icon" class="h-10 w-10 object-cover rounded-xl group-hover:border-pink-500/50 transition-all duration-300 shadow-lg">
+        <img src="{{ asset('img/iconweb.jpeg') }}" alt="Icon" class="h-10 w-10 object-cover rounded-full group-hover:border-pink-500/50 transition-all duration-300 shadow-lg">
     </a>
 
     <!-- Desktop Menu -->

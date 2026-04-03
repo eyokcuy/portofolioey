@@ -34,8 +34,8 @@
                 <div class="flex items-center gap-4">
                     <!-- Album Art -->
                     <div class="relative w-14 h-14 flex-shrink-0">
-                        <img src="{{ asset('img/foto.jpeg') }}" class="w-full h-full object-cover rounded-xl shadow-lg" alt="Album Art">
-                        <div class="absolute inset-0 bg-pink-500/20 group-hover/player:bg-pink-500/10 transition-colors rounded-xl"></div>
+                        <img src="{{ asset('img/foto.jpeg') }}" class="w-full h-full object-cover rounded-full shadow-lg" alt="Album Art">
+                        <div class="absolute inset-0 bg-pink-500/20 group-hover/player:bg-pink-500/10 transition-colors rounded-full"></div>
                     </div>
 
                     <!-- Info -->
@@ -53,8 +53,8 @@
 
                 <!-- Bottom: Visualizer & Progress -->
                 <div class="flex flex-col gap-2">
-                    <div class="h-8 w-full flex items-end justify-center gap-[2px] px-2 opacity-50">
-                        <canvas id="visualizer-canvas" class="w-full h-full"></canvas>
+                    <div class="h-12 w-full relative flex items-center justify-center overflow-hidden rounded-xl" style="background: linear-gradient(135deg, rgba(236,72,153,0.05) 0%, rgba(251,113,133,0.04) 100%);">
+                        <canvas id="visualizer-canvas" class="w-full h-full absolute inset-0"></canvas>
                     </div>
                     <div class="flex flex-col gap-1">
                         <!-- Progress Area with larger hit target -->
@@ -68,13 +68,14 @@
                             <div id="progress-handle" class="absolute top-1/2 -translate-y-1/2 w-3 h-3 bg-white rounded-full scale-0 group-hover/bar:scale-100 transition-transform shadow-md pointer-events-none" style="left: 0%;"></div>
                         </div>
                         <div class="flex justify-between text-[10px] text-zinc-600 font-medium px-0.5">
-                            <span id="current-time">0:00</span>
                             <span id="duration">...</span>
                         </div>
                     </div>
                 </div>
 
-                <audio id="main-audio" preload="auto" src="{{ asset('audio/kane.mp3') }}" autoplay playsinline></audio>
+                <!-- Ganti asset('audio/kane.mp3') menjadi route('play-audio') -->
+                <audio id="main-audio" preload="auto" src="{{ route('play-audio') }}" autoplay playsinline></audio>
+
             </div>
         </div>
         <!--   -->
@@ -428,58 +429,149 @@
 
             function initVisualizer() {
                 if (audioCtx) return;
-                
+
                 try {
                     audioCtx = new (window.AudioContext || window.webkitAudioContext)();
                     analyser = audioCtx.createAnalyser();
-                    source = audioCtx.createMediaElementSource(audio);
+                    source   = audioCtx.createMediaElementSource(audio);
                     source.connect(analyser);
                     analyser.connect(audioCtx.destination);
-                    
-                    analyser.fftSize = 64; 
-                    const bufferLength = analyser.frequencyBinCount;
-                    const dataArray = new Uint8Array(bufferLength);
-                    
+
+                    // Smooth the frequency data over time (built-in)
+                    analyser.fftSize = 2048;
+                    analyser.smoothingTimeConstant = 0.85;
+
+                    const bufferLength = analyser.fftSize;
+                    const dataArray    = new Float32Array(bufferLength);
+
                     const vCanvas = document.getElementById('visualizer-canvas');
-                    const vCtx = vCanvas.getContext('2d');
-                    
-                    // Set internal canvas size
-                    const dpr = window.devicePixelRatio || 1;
-                    vCanvas.width = vCanvas.offsetWidth * dpr;
-                    vCanvas.height = vCanvas.offsetHeight * dpr;
-                    vCtx.scale(dpr, dpr);
+                    const vCtx    = vCanvas.getContext('2d');
+
+                    // Promote to its own GPU layer
+                    vCanvas.style.willChange = 'transform';
+
+                    // Cache gradient — rebuild only on resize
+                    let cachedW = 0, cachedGrad = null;
+
+                    function resizeCanvas() {
+                        const dpr      = window.devicePixelRatio || 1;
+                        vCanvas.width  = vCanvas.offsetWidth  * dpr;
+                        vCanvas.height = vCanvas.offsetHeight * dpr;
+                        vCtx.scale(dpr, dpr);
+                        cachedW = 0; // invalidate gradient
+                    }
+                    resizeCanvas();
+                    window.addEventListener('resize', resizeCanvas);
+
+                    // Pause draw loop when canvas is off-screen
+                    let isVisible = true;
+                    new IntersectionObserver(
+                        ([entry]) => { isVisible = entry.isIntersecting; },
+                        { threshold: 0 }
+                    ).observe(vCanvas);
+
+                    // Suppress shadow during scroll for smooth scrolling
+                    let isScrolling = false, scrollTimer = null;
+                    window.addEventListener('scroll', () => {
+                        isScrolling = true;
+                        clearTimeout(scrollTimer);
+                        scrollTimer = setTimeout(() => { isScrolling = false; }, 150);
+                    }, { passive: true });
+
+                    // Low-pass filter state
+                    const smoothed = new Float32Array(bufferLength);
+
+                    let idleTime = 0;
 
                     function draw() {
-                        if (!isPlaying && audioCtx.state !== 'running') {
-                             requestAnimationFrame(draw);
-                             return;
+                        requestAnimationFrame(draw);
+                        if (!isVisible) return;
+
+                        const W    = vCanvas.offsetWidth;
+                        const H    = vCanvas.offsetHeight;
+                        const midY = H / 2;
+
+                        vCtx.clearRect(0, 0, W, H);
+
+                        // ── Idle shimmer when paused ──
+                        if (!isPlaying) {
+                            idleTime += 0.03;
+                            vCtx.beginPath();
+                            for (let x = 0; x <= W; x++) {
+                                const t = x / W;
+                                const y = midY + Math.sin(t * Math.PI * 5 + idleTime) * 1.8
+                                                * Math.sin(t * Math.PI);
+                                x === 0 ? vCtx.moveTo(x, y) : vCtx.lineTo(x, y);
+                            }
+                            vCtx.strokeStyle = 'rgba(236,72,153,0.18)';
+                            vCtx.lineWidth   = 1;
+                            vCtx.stroke();
+                            return;
                         }
 
-                        requestAnimationFrame(draw);
-                        analyser.getByteFrequencyData(dataArray);
-                        
-                        vCtx.clearRect(0, 0, vCanvas.width, vCanvas.height);
-                        
-                        const barWidth = (vCanvas.offsetWidth / bufferLength);
-                        let x = 0;
-                        
+                        idleTime = 0;
+
+                        // Get raw waveform
+                        analyser.getFloatTimeDomainData(dataArray);
+
+                        // Apply manual low-pass filter per sample
                         for (let i = 0; i < bufferLength; i++) {
-                            const barHeight = (dataArray[i] / 255) * vCanvas.offsetHeight;
-                            
-                            // Beautiful pink theme bars
-                            const gradient = vCtx.createLinearGradient(0, vCanvas.offsetHeight, 0, 0);
-                            gradient.addColorStop(0, 'rgba(236, 72, 153, 0.2)');
-                            gradient.addColorStop(1, 'rgba(236, 72, 153, 0.8)');
-                            
-                            vCtx.fillStyle = gradient;
-                            vCtx.fillRect(x, vCanvas.offsetHeight - barHeight, barWidth - 1, barHeight);
-                            
-                            x += barWidth;
+                            smoothed[i] = smoothed[i] * 0.92 + dataArray[i] * 0.08;
                         }
+
+                        // Rebuild gradient only when width changes
+                        if (W !== cachedW) {
+                            cachedW    = W;
+                            cachedGrad = vCtx.createLinearGradient(0, 0, W, 0);
+                            cachedGrad.addColorStop(0,    'rgba(236,72,153,0.0)');
+                            cachedGrad.addColorStop(0.2,  'rgba(236,72,153,0.7)');
+                            cachedGrad.addColorStop(0.5,  'rgba(251,113,133,1.0)');
+                            cachedGrad.addColorStop(0.8,  'rgba(236,72,153,0.7)');
+                            cachedGrad.addColorStop(1,    'rgba(236,72,153,0.0)');
+                        }
+
+                        const step = bufferLength / W;
+
+                        // ── Single smooth waveform using quadratic curves ──
+                        vCtx.save();
+
+                        if (!isScrolling) {
+                            vCtx.shadowBlur  = 4;
+                            vCtx.shadowColor = 'rgba(236,72,153,0.35)';
+                        }
+
+                        vCtx.beginPath();
+
+                        // First point
+                        let x0 = 0;
+                        let y0 = midY - smoothed[0] * midY * 0.25;
+                        vCtx.moveTo(x0, y0);
+
+                        // Draw smooth curve through midpoints
+                        for (let x = 1; x < W - 1; x++) {
+                            const y1   = midY - smoothed[Math.floor(x       * step)] * midY * 0.25;
+                            const y2   = midY - smoothed[Math.floor((x + 1) * step)] * midY * 0.25;
+                            const cpX  = x;
+                            const cpY  = y1;
+                            const endX = (x + x + 1) / 2;
+                            const endY = (y1 + y2) / 2;
+                            vCtx.quadraticCurveTo(cpX, cpY, endX, endY);
+                        }
+
+                        // Last point
+                        vCtx.lineTo(W, midY - smoothed[bufferLength - 1] * midY * 0.25);
+
+                        vCtx.strokeStyle = cachedGrad;
+                        vCtx.lineWidth   = 1.5;
+                        vCtx.lineJoin    = 'round';
+                        vCtx.lineCap     = 'round';
+                        vCtx.stroke();
+                        vCtx.restore();
                     }
+
                     draw();
                 } catch (e) {
-                    console.error("Audio Visualizer Error:", e);
+                    console.error('Audio Visualizer Error:', e);
                 }
             }
 
